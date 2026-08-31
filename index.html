@@ -103,6 +103,15 @@
       transition-delay: 0s;
     }
 
+    .content-view {
+      opacity: 1;
+      transition: opacity 130ms ease;
+    }
+
+    .content-view.is-fading {
+      opacity: 0;
+    }
+
     .content-view__title {
       margin: 0 0 32px;
       font-size: clamp(2rem, 6vw, 3.25rem);
@@ -135,7 +144,8 @@
 
     @media (prefers-reduced-motion: reduce) {
       .site-nav__link,
-      .content-panel {
+      .content-panel,
+      .content-view {
         transition: none;
       }
     }
@@ -182,17 +192,26 @@
     const contentPanel = document.querySelector(".content-panel");
     const contentLinks = document.querySelectorAll(".site-nav__link");
     const contentViews = document.querySelectorAll(".content-view");
+    const fadeDuration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 130;
+    let contentSwitchId = 0;
 
-    function openContent(contentId, shouldFocus = true) {
+    function wait(duration) {
+      return new Promise((resolve) => window.setTimeout(resolve, duration));
+    }
+
+    async function openContent(contentId, shouldFocus = true) {
       const activeView = document.getElementById(contentId);
 
       if (!activeView || !activeView.classList.contains("content-view")) {
         return;
       }
 
-      contentViews.forEach((view) => {
-        view.hidden = view !== activeView;
-      });
+      const switchId = ++contentSwitchId;
+      const currentView = Array.from(contentViews).find((view) => !view.hidden);
+      const isSwitching =
+        contentPanel.classList.contains("is-open") &&
+        currentView &&
+        currentView !== activeView;
 
       contentLinks.forEach((link) => {
         if (link.hash === `#${contentId}`) {
@@ -200,6 +219,38 @@
         } else {
           link.removeAttribute("aria-current");
         }
+      });
+
+      if (isSwitching && fadeDuration > 0) {
+        currentView.classList.add("is-fading");
+        await wait(fadeDuration);
+
+        if (switchId !== contentSwitchId) {
+          return;
+        }
+
+        currentView.hidden = true;
+        currentView.classList.remove("is-fading");
+        activeView.hidden = false;
+        activeView.classList.add("is-fading");
+        void activeView.offsetWidth;
+        activeView.classList.remove("is-fading");
+        await wait(fadeDuration);
+
+        if (switchId !== contentSwitchId) {
+          return;
+        }
+
+        if (shouldFocus) {
+          activeView.querySelector(".content-view__title").focus();
+        }
+
+        return;
+      }
+
+      contentViews.forEach((view) => {
+        view.hidden = view !== activeView;
+        view.classList.remove("is-fading");
       });
 
       contentPanel.classList.add("is-open");
@@ -213,6 +264,8 @@
     }
 
     function closeContent() {
+      contentSwitchId += 1;
+      contentViews.forEach((view) => view.classList.remove("is-fading"));
       contentPanel.classList.remove("is-open");
       contentPanel.setAttribute("aria-hidden", "true");
       contentLinks.forEach((link) => link.removeAttribute("aria-current"));
