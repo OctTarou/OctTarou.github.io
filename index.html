@@ -77,7 +77,6 @@
 
     .menu__toggle:focus-visible,
     .menu__link:focus-visible,
-    .content-panel__close:focus-visible,
     .content-view__title:focus-visible {
       outline: 2px solid #222;
       outline-offset: 3px;
@@ -158,21 +157,6 @@
       transition-delay: 0s;
     }
 
-    .content-panel__close {
-      position: absolute;
-      top: max(24px, env(safe-area-inset-top));
-      right: max(24px, env(safe-area-inset-right));
-      height: 40px;
-      padding: 0 14px;
-      color: inherit;
-      font: inherit;
-      font-size: 0.82rem;
-      cursor: pointer;
-      background: rgba(255, 255, 255, 0.36);
-      border: 0;
-      border-radius: 10px;
-    }
-
     .content-view__title {
       margin: 0 0 32px;
       font-size: clamp(2rem, 6vw, 3.25rem);
@@ -232,8 +216,6 @@
   </nav>
 
   <aside class="content-panel" aria-hidden="true">
-    <button class="content-panel__close" type="button">Close</button>
-
     <section class="content-view" id="about" hidden>
       <h1 class="content-view__title" tabindex="-1">About</h1>
       <div class="about-profile">
@@ -284,7 +266,6 @@
     const toggle = document.querySelector(".menu__toggle");
     const panel = document.querySelector(".menu__panel");
     const contentPanel = document.querySelector(".content-panel");
-    const contentClose = document.querySelector(".content-panel__close");
     const contentLinks = document.querySelectorAll(".menu__link");
     const contentViews = document.querySelectorAll(".content-view");
 
@@ -337,6 +318,15 @@
       if (!menu.contains(event.target)) {
         setMenuOpen(false);
       }
+
+      const clickedMenuLink = event.target.closest(".menu__link");
+      if (
+        contentPanel.classList.contains("is-open") &&
+        !contentPanel.contains(event.target) &&
+        !clickedMenuLink
+      ) {
+        closeContent();
+      }
     });
 
     document.addEventListener("keydown", (event) => {
@@ -357,11 +347,6 @@
         setMenuOpen(false);
         openContent(link.hash.slice(1));
       });
-    });
-
-    contentClose.addEventListener("click", () => {
-      closeContent();
-      toggle.focus();
     });
 
     const initialContent = window.location.hash.slice(1);
