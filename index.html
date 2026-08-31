@@ -132,7 +132,7 @@
       top: 0;
       right: 0;
       z-index: 2;
-      width: min(520px, 100%);
+      width: 50vw;
       height: 100vh;
       height: 100svh;
       padding: clamp(84px, 12vh, 120px) clamp(28px, 6vw, 64px) 48px;
@@ -188,8 +188,9 @@
 
     .about-profile__image {
       display: block;
-      width: 200px;
-      height: 200px;
+      width: min(200px, 100%);
+      height: auto;
+      aspect-ratio: 1;
       object-fit: cover;
       border-radius: 16px;
     }
@@ -244,7 +245,15 @@
           height="200"
         >
         <p class="about-profile__text">
-          教育者 兼 システムエンジニア。エレキギターとビールが好き。
+          教育者 / システムエンジニア<br>
+          <br>
+          好き：<br>
+          ・ビール<br>
+          ・エレキギター<br>
+          ・DreamTheater<br>
+          <br>
+          嫌い：<br>
+          ・のぼり坂
         </p>
       </div>
     </section>
